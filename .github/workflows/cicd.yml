@@ -1,18 +1,23 @@
-name: Build and Push to ECR
+
+
+name: Build, Push to ECR, and Deploy to EC2
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  build-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -20,12 +25,170 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      # 3. Login to Amazon ECR Public
+      - name: Login to Amazon ECR Public
         run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 062266257890.dkr.ecr.us-east-1.amazonaws.com
+          aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} \
+          | docker login --username AWS --password-stdin public.ecr.aws/b6q5m0o5
 
-      - name: Build, tag, and push image to Amazon ECR
+      # 4. Build, tag, and push Docker image
+      - name: Build, tag, and push Docker image
         run: |
-          docker build -t mediplus:v1 .
-          docker tag mediplus:v1 062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v1
-          docker push 062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v1
+          set -x
+          IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus
+
+          # Build Docker image from the ./mediplus directory
+          docker build -t mediplus ./mediplus
+
+          # Tag image for ECR
+          docker tag mediplus:v2 $IMAGE_URI
+
+          # Push image to ECR Public
+          docker push $IMAGE_URI
+
+      # 5. Deploy to EC2 via SSH
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}     # Usually 'ubuntu'
+          key: ${{ secrets.EC2_SSH_KEY }}       # Private SSH key stored as secret
+          script: |
+            set -x
+            IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v2
+
+            # Stop and remove existing container
+            sudo docker stop mediplus || true
+            sudo docker rm mediplus || true
+
+            # Log in to ECR Public
+            aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} \
+            | sudo docker login --username AWS --password-stdin public.ecr.aws/b6q5m0o5
+
+            # Pull the latest image version
+            sudo docker pull $IMAGE_URI
+
+            # Run new container
+            sudo docker run -d --name mediplus -p 80:80 $IMAGE_URI
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
