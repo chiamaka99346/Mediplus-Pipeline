@@ -36,7 +36,7 @@ jobs:
           IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:latest  # Ensure the image tag matches your needs
 
           # Build Docker image from the ./mediplus directory
-          docker build -t mediplus ./mediplus  # Path adjusted as per your repo structure
+          docker build -t mediplus .  # Path adjusted as per your repo structure
 
           # Tag the image for ECR
           docker tag mediplus:latest $IMAGE_URI
