@@ -37,10 +37,10 @@ jobs:
           docker build -t mediplus-ecr:v1 .   # Path adjusted as per your repo structure
 
           # Tag the image for ECR
-          docker tag mediplus-ecr:v1 public.ecr.aws/j4n7l1s4/mediplus-ecr:latest$IMAGE_URI
+          docker tag mediplus-ecr:v1 public.ecr.aws/j4n7l1s4/mediplus-ecr:v1
 
           # Push the image to ECR
-          docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v1 $IMAGE_URI
+          docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v1 
 
       # 5. Deploy to EC2 via SSH
       - name: Deploy to EC2
