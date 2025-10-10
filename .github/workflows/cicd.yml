@@ -7,61 +7,55 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-push-deploy:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu environment
+  # build-push-deploy:
+  #   runs-on: ubuntu-latest  # Use the latest Ubuntu environment
 
-    steps:
-      # 1. Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
+  #   steps:
+  #     # 1. Checkout the repository
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      # 2. Configure AWS credentials for ECR and EC2
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+  #     # 2. Configure AWS credentials for ECR and EC2
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
 
-      # 3. Login to Amazon ECR Public (login to AWS ECR for pushing/pulling images)
-      - name: Login to Amazon ECR Public
-        run: |
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j4n7l1s4
+  #     # 3. Login to Amazon ECR Public (login to AWS ECR for pushing/pulling images)
+  #     - name: Login to Amazon ECR Public
+  #       run: |
+  #         aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j4n7l1s4
 
-      # 4. Build, tag, and push Docker image to ECR
-      - name: Build, tag, and push Docker image
-        run: |
-          # Build Docker image from the ./mediplus directory
-          docker build -t mediplus-ecr:v2 .   # Path adjusted as per your repo structure
+  #     # 4. Build, tag, and push Docker image to ECR
+  #     - name: Build, tag, and push Docker image
+  #       run: |
+  #         # Build Docker image from the ./mediplus directory
+  #         docker build -t mediplus-ecr:v2 .   # Path adjusted as per your repo structure
 
-          # Tag the image for ECR
-          docker tag mediplus-ecr:v2 public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
+  #         # Tag the image for ECR
+  #         docker tag mediplus-ecr:v2 public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
 
-          # Push the image to ECR
-          docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v2 
+  #         # Push the image to ECR
+  #         docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v2 
 
-      # 5. Deploy to EC2 via SSH
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}     # Usually 'ubuntu'
-          key: ${{ secrets.EC2_SSH_KEY }}       # Private SSH key stored as secret
-          script: |
-            IMAGE_URI=public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push-deploy
 
-            # Stop and remove existing container
-            sudo docker stop mediplus-ecr:v2 || true
-            sudo docker rm mediplus-ecr:v2 || true
+  steps:
+    - name: check my ssh key
+      run: |
+          echo '${{ secrets.SSH_KEY }}' > workflow-cicd.pem
+          chmod 600 workflow-cicd.pem
 
-            # Log in to ECR
-            aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin public.ecr.aws/j4n7l1s4
+    - name: Authenticate to AWS ECR, pull and run the image
+     run: |          
+        ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker pull public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
 
-            # Pull the latest image version
-            sudo docker pull $IMAGE_URI
-
-            # Run new container
-            sudo docker run -d --name mediplus-ecr:v2 -p 80:80 $IMAGE_URI
+        ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker run -d -p 8081:80 --name mediplus public.ecr.aws/j4n7l1s4/mediplus-ecr:v2'
+#      ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@172.31.81.66 'hostnamectl'
 
 
 
