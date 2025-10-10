@@ -33,13 +33,13 @@ jobs:
       - name: Build, tag, and push Docker image
         run: |
           set -x
-          IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v2  # Ensure the image tag matches your needs
+          IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v3  # Ensure the image tag matches your needs
 
           # Build Docker image from the ./mediplus directory
           docker build -t mediplus .  # Path adjusted as per your repo structure
 
           # Tag the image for ECR
-          docker tag mediplus:v2 $IMAGE_URI
+          docker tag mediplus:v3 $IMAGE_URI
 
           # Push the image to ECR
           docker push $IMAGE_URI
@@ -53,7 +53,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}       # Private SSH key stored as secret
           script: |
             set -x
-            IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v2
+            IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v3
 
             # Stop and remove existing container
             sudo docker stop mediplus || true
@@ -67,7 +67,7 @@ jobs:
             sudo docker pull $IMAGE_URI
 
             # Run new container
-            sudo docker run -d --name mediplus -p 80:80 $IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v2
+            sudo docker run -d --name mediplus -p 80:80 $IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v3
 
 
 
