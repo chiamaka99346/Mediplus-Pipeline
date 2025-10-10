@@ -26,23 +26,21 @@ jobs:
       # 3. Login to Amazon ECR Public (login to AWS ECR for pushing/pulling images)
       - name: Login to Amazon ECR Public
         run: |
-          aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} \
-          | docker login --username AWS --password-stdin public.ecr.aws/b6q5m0o5
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j4n7l1s4
 
       # 4. Build, tag, and push Docker image to ECR
       - name: Build, tag, and push Docker image
         run: |
-          set -x
-          IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v3  # Ensure the image tag matches your needs
+          
 
           # Build Docker image from the ./mediplus directory
-          docker build -t mediplus .  # Path adjusted as per your repo structure
+          docker build -t mediplus-ecr:v1 .   # Path adjusted as per your repo structure
 
           # Tag the image for ECR
-          docker tag mediplus:v3 $IMAGE_URI
+          docker tag mediplus-ecr:v1 public.ecr.aws/j4n7l1s4/mediplus-ecr:latest$IMAGE_URI
 
           # Push the image to ECR
-          docker push $IMAGE_URI
+          docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v1 $IMAGE_URI
 
       # 5. Deploy to EC2 via SSH
       - name: Deploy to EC2
@@ -53,7 +51,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}       # Private SSH key stored as secret
           script: |
             set -x
-            IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:latest
+            IMAGE_URI=public.ecr.aws/j4n7l1s4/mediplus-ecr:latest
 
             # Stop and remove existing container
             sudo docker stop mediplus || true
@@ -61,13 +59,13 @@ jobs:
 
             # Log in to ECR
             aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} \
-            | sudo docker login --username AWS --password-stdin public.ecr.aws/b6q5m0o5
+            | sudo docker login --username AWS --password-stdin public.ecr.aws/j4n7I1s4
 
             # Pull the latest image version
             sudo docker pull $IMAGE_URI
 
             # Run new container
-            sudo docker run -d --name mediplus -p 80:80 $IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v3
+            sudo docker run -d --name mediplus -p 80:80 $IMAGE_URI=public.ecr.aws/j4n7l1s4/mediplus-ecr:v3
 
 
 
