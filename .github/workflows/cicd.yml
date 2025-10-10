@@ -32,13 +32,13 @@ jobs:
       - name: Build, tag, and push Docker image
         run: |
           # Build Docker image from the ./mediplus directory
-          docker build -t mediplus-ecr:v1 .   # Path adjusted as per your repo structure
+          docker build -t mediplus-ecr:v2 .   # Path adjusted as per your repo structure
 
           # Tag the image for ECR
-          docker tag mediplus-ecr:v1 public.ecr.aws/j4n7l1s4/mediplus-ecr:v1
+          docker tag mediplus-ecr:v2 public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
 
           # Push the image to ECR
-          docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v1 
+          docker push public.ecr.aws/j4n7l1s4/mediplus-ecr:v2 
 
       # 5. Deploy to EC2 via SSH
       - name: Deploy to EC2
@@ -48,11 +48,11 @@ jobs:
           username: ${{ secrets.EC2_USER }}     # Usually 'ubuntu'
           key: ${{ secrets.EC2_SSH_KEY }}       # Private SSH key stored as secret
           script: |
-            IMAGE_URI=public.ecr.aws/j4n7l1s4/mediplus-ecr:v1
+            IMAGE_URI=public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
 
             # Stop and remove existing container
-            sudo docker stop mediplus-ecr:v1 || true
-            sudo docker rm mediplus-ecr:v1 || true
+            sudo docker stop mediplus-ecr:v2 || true
+            sudo docker rm mediplus-ecr:v2 || true
 
             # Log in to ECR
             aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin public.ecr.aws/j4n7l1s4
@@ -61,7 +61,7 @@ jobs:
             sudo docker pull $IMAGE_URI
 
             # Run new container
-            sudo docker run -d --name mediplus-ecr:v1 -p 80:80 $IMAGE_URI
+            sudo docker run -d --name mediplus-ecr:v2 -p 80:80 $IMAGE_URI
 
 
 
