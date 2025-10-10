@@ -53,7 +53,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}       # Private SSH key stored as secret
           script: |
             set -x
-            IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:v3
+            IMAGE_URI=062266257890.dkr.ecr.us-east-1.amazonaws.com/mediplus:latest
 
             # Stop and remove existing container
             sudo docker stop mediplus || true
