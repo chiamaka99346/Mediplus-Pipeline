@@ -52,7 +52,7 @@ jobs:
 
       - name: Authenticate to AWS ECR, pull and run the image
         run: |          
-          ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker pull public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
+          ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker pull public.ecr.aws/j4n7l1s4/mediplus-ecr:v2'
           ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker run -d -p 8081:80 --name mediplus public.ecr.aws/j4n7l1s4/mediplus-ecr:v2'
 #      ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@172.31.81.66 'hostnamectl'
 
