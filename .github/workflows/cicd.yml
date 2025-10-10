@@ -44,17 +44,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-push
 
-  steps:
-    - name: check my EC2_SSH_KEY
-      run: |
+    steps:
+      - name: check my EC2_SSH_KEY
+        run: |
           echo '${{ secrets.EC2_SSH_KEY }}' > workflow-cicd.pem
           chmod 600 workflow-cicd.pem
 
-    - name: Authenticate to AWS ECR, pull and run the image
-     run: |          
-        ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker pull public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
-
-        ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker run -d -p 8081:80 --name mediplus public.ecr.aws/j4n7l1s4/mediplus-ecr:v2'
+      - name: Authenticate to AWS ECR, pull and run the image
+        run: |          
+          ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker pull public.ecr.aws/j4n7l1s4/mediplus-ecr:v2
+          ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@54.175.106.147 'docker run -d -p 8081:80 --name mediplus public.ecr.aws/j4n7l1s4/mediplus-ecr:v2'
 #      ssh -o StrictHostKeyChecking=no -i workflow-cicd.pem ubuntu@172.31.81.66 'hostnamectl'
 
 
