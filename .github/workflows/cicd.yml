@@ -34,7 +34,7 @@ jobs:
         run: |
          IMAGE_URL=${{ secrets.REGISTRY_NAME }}/medplux:$GITHUB_RUN_NUMBER
     
-         docker build -t $IMAGE_URL.
+         docker build -t "$IMAGE_URL"   .
     
          docker push $IMAGE_URL
 
