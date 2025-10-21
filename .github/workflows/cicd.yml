@@ -25,8 +25,9 @@ jobs:
                 
       # 3. Login to Amazon ECR Public (login to AWS ECR for pushing/pulling images)
       - name: Login to Amazon ECR Public
-        run: |
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $IMAGE_URL
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+          
 
      # 4. Build, tag, and push Docker image to ECR
       - name: Build, tag, and push Docker image
